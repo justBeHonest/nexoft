@@ -14,6 +14,19 @@ dependencies:
 
   cupertino_icons: ^1.0.2
   dio: ^5.7.0
+  flutter_svg: ^1.1.6
+  freezed: ^2.3.3
+  json_annotation: ^4.8.0
+  bloc: ^8.1.4
+  flutter_bloc: ^8.1.6
+  freezed_annotation: ^2.4.1
+  build_runner: ^2.3.3
+  json_serializable: ^6.6.1
+  flutter_dotenv: ^5.2.1
+  cached_network_image: ^3.2.3
+  image_picker: ^0.7.2+1
+  get: ^4.6.5
+  bot_toast: ^4.1.3
 
 dev_dependencies:
   flutter_test:
@@ -23,3 +36,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+        - asset: assets/fonts/Nunito-Bold.ttf
+  assets:
+    - assets/icons/
+    - .env

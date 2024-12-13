@@ -1,51 +1,69 @@
-// lib/features/contacts/presentation/screens/contacts_screen.dart
-import 'package:flutter/material.dart';
-import 'package:nexoft/core/network/api_client.dart';
-import 'package:nexoft/core/constants/network_constants.dart';
+import 'dart:developer';
 
-class ContactsScreen extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nexoft/core/extension/context_extension.dart';
+import 'package:nexoft/core/extension/string_extension.dart';
+import 'package:nexoft/core/extension/widget_extension.dart';
+import 'package:nexoft/features/contacts/model/contact_model.dart';
+import 'package:nexoft/features/create_contact/presentation/screens/create_contact.dart';
+import '../../../../core/base_widgets/base_scaffold.dart';
+import '../../../../core/components/contact_list_tile.dart';
+import '../../../../core/components/no_contacts_widget.dart';
+import '../../../../core/components/search_text_field.dart';
+import '../../../../core/ui/ui.dart';
+import '../../../create_contact/bloc/contact/contact_bloc.dart';
+import '../../bloc/popup/popup_bloc.dart';
+
+class ContactsScreen extends StatelessWidget {
   @override
-  _ContactsScreenState createState() => _ContactsScreenState();
+  Widget build(BuildContext context) {
+    return BlocBuilder<PopupBloc, PopupState>(
+      builder: (context, state) {
+        return BaseScaffold(
+          onChanged: (value) {
+            log("value: $value");
+            log(state.toString(), name: 'State');
+            context.read<PopupBloc>().add(PopupEvent.search(value));
+          },
+          body: state.maybeWhen(
+            loading: () => CircularProgressIndicator().center,
+            initial: () => "initial".titleLarge().center,
+            error: () => "error".titleLarge().center,
+            success: (userList) => ContactsListView(userList: userList),
+            userListIsEmpty: () =>
+                "You don't have any contacts containing the words you are looking for."
+                    .titleLarge()
+                    .center,
+            orElse: () => Center(child: Text("Hata")),
+          ),
+        );
+      },
+    );
+  }
 }
 
-class _ContactsScreenState extends State<ContactsScreen> {
-  final ApiClient apiClient = ApiClient(baseUrl: baseUrl);
-  List<dynamic> contacts = [];
-
-  @override
-  void initState() {
-    super.initState();
-    fetchContacts();
-  }
-
-  Future<void> fetchContacts() async {
-    final response =
-        await apiClient.get('api/User?skip=0&take=10', queryParameters: {
-      'ApiKey': apiKey,
-    });
-
-    setState(() {
-      contacts = response.data; // API'den gelen veriyi listeye atıyoruz
-    });
-  }
+class ContactsListView extends StatelessWidget {
+  final List<User> userList;
+  const ContactsListView({
+    required this.userList,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Contacts")),
-      body: ListView.builder(
-        itemCount: contacts.length,
-        itemBuilder: (context, index) {
-          final contact = contacts[index];
-          return ListTile(
-            title: Text('${contact['firstName']} ${contact['lastName']}'),
-            subtitle: Text(contact['phoneNumber']),
-            onTap: () {
-              // Burada Profile ekranına gitmek için navigasyon ekle
-            },
-          );
-        },
-      ),
+    return userList.isEmpty
+        ? const NoContactsWidget()
+        : _contactsList(userList);
+  }
+
+  Widget _contactsList(List<User> userList) {
+    return ListView.builder(
+      itemCount: userList.length,
+      itemBuilder: (context, index) {
+        return ContactListTile(
+          user: userList[index],
+        );
+      },
     );
   }
 }
